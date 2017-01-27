@@ -1,0 +1,15 @@
+{
+  "name": "objectstream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc --reporter=html --reporter=text node_modules/mocha/bin/mocha test; echo coverage/index.html",
+    "test:watch": "nyc --reporter=html --reporter=text node_modules/mocha/bin/mocha --watch test; echo coverage/index.html"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "nyc": "^10.1.2"
+  }
+}
