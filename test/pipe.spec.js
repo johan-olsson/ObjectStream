@@ -10,13 +10,13 @@ describe('objectstream.pipe()', () => {
 
   it('should pipe stream data to piped stream', (done) => {
 
-    stream.pipe(pipestream)
+    assert.equal(stream.pipe(pipestream) instanceof Stream, true)
 
-    pipestream.on('data', (data) => {
+    pipestream._events.on('data', (data) => {
       assert.equal(data, 'the data')
       done()
     })
 
-    stream.emit('data', 'the data')
+    stream._events.emit('data', 'the data')
   })
 })

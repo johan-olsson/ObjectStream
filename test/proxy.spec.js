@@ -15,15 +15,15 @@ describe('objectstream.proxy()', () => {
     let count = 1
 
     stream1.proxy(stream2, stream3)
-    .on('data', (data) => {
+    ._events.on('data', (data) => {
       assert.equal(data, `the data ${count++}`)
 
       if (count === 4) done()
     })
 
-    stream1.emit('data', 'the data 1')
-    stream2.emit('data', 'the data 2')
-    stream3.emit('data', 'the data 3')
+    stream1._events.emit('data', 'the data 1')
+    stream2._events.emit('data', 'the data 2')
+    stream3._events.emit('data', 'the data 3')
   })
 
   it('should only dispose own subscriptions', (done) => {
@@ -35,7 +35,7 @@ describe('objectstream.proxy()', () => {
     let count = 1
 
     stream1
-      .on('data', (data) => {
+      ._events.on('data', (data) => {
         assert.ok(!'this should not be triggered')
       })
 
@@ -43,13 +43,13 @@ describe('objectstream.proxy()', () => {
       .dispose()
 
     stream2
-      .on('data', (data) => {
+      ._events.on('data', (data) => {
         assert.equal(data, 'the data 2')
         done()
       })
 
-    stream1.emit('data', 'the data 1')
-    stream2.emit('data', 'the data 2')
-    stream3.emit('data', 'the data 3')
+    stream1._events.emit('data', 'the data 1')
+    stream2._events.emit('data', 'the data 2')
+    stream3._events.emit('data', 'the data 3')
   })
 })

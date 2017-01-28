@@ -14,14 +14,14 @@ describe('objectstream.merge()', () => {
     let count = 1
 
     stream1.merge(stream2, stream3)
-    .on('data', (data) => {
+    ._events.on('data', (data) => {
       assert.equal(data, `the data ${count++}`)
 
       if (count === 4) done()
     })
 
-    stream1.emit('data', 'the data 1')
-    stream2.emit('data', 'the data 2')
-    stream3.emit('data', 'the data 3')
+    stream1._events.emit('data', 'the data 1')
+    stream2._events.emit('data', 'the data 2')
+    stream3._events.emit('data', 'the data 3')
   })
 })

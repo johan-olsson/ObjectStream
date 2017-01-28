@@ -9,11 +9,11 @@ describe('objectstream.read()', () => {
 
   it('should read incoming data', (done) => {
 
-    stream.read((data) => {
+    assert.equal(stream.read((data) => {
       assert.equal(data, 'the data')
       done()
-    })
+    }) instanceof Stream, true)
 
-    stream.emit('data', 'the data')
+    stream._events.emit('data', 'the data')
   })
 })

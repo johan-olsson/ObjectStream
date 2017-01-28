@@ -2,25 +2,25 @@
 
 const EventEmitter = require('events')
 
-module.exports = class Stream extends EventEmitter {
+module.exports = class Stream {
 
-  constructor() {
-    super()
+  constructor(events) {
+    this._events = events || new EventEmitter()
     this._subscriptions = []
   }
 
   write(data) {
-    this.emit('data', data)
+    this._events.emit('data', data)
     return this
   }
 
   error(err) {
-    this.emit('uncaughtException', err)
+    this._events.emit('uncaughtException', err)
     return this
   }
 
   read(callback) {
-    this.on('data', (data) => {
+    this._events.on('data', (data) => {
       callback(data)
     })
     return this
@@ -29,15 +29,33 @@ module.exports = class Stream extends EventEmitter {
   map(transform) {
     const stream = new Stream()
 
-    this.on('data', (data) => {
-      stream.write(transform(data))
+    this._events.on('data', (data) => {
+      const result = transform(data, (data) => {
+        stream.write(data)
+      })
+
+      if (result) stream.write(result)
+    })
+
+    return stream
+  }
+
+  filter(filter) {
+    const stream = new Stream()
+
+    this._events.on('data', (data) => {
+      const result = filter(data, (result) => {
+        if (result) stream.write(data)
+      })
+
+      if (result) stream.write(data)
     })
 
     return stream
   }
 
   pipe(stream) {
-    this.on('data', (data) => {
+    this._events.on('data', (data) => {
       stream.write(data)
     })
     return stream
@@ -46,11 +64,11 @@ module.exports = class Stream extends EventEmitter {
   merge(...streams) {
 
     const outstream = new Stream()
-    streams.push(this)
 
+    streams.push(this)
     streams.forEach((stream) => {
-      stream.on('data', (data) => {
-        outstream.emit('data', data)
+      stream._events.on('data', (data) => {
+        outstream._events.emit('data', data)
       })
     })
 
@@ -60,7 +78,7 @@ module.exports = class Stream extends EventEmitter {
   proxy(...streams) {
 
     const handler = function (eventName, data) {
-      this.emit(eventName, data)
+      this._events.emit(eventName, data)
     }
 
     streams.forEach((stream) => {
@@ -68,8 +86,8 @@ module.exports = class Stream extends EventEmitter {
       const dataHandler = handler.bind(this, 'data')
       const uncaughtExceptionHandler = handler.bind(this, 'uncaughtException')
 
-      stream.on('data', dataHandler)
-      stream.on('uncaughtException', uncaughtExceptionHandler)
+      stream._events.on('data', dataHandler)
+      stream._events.on('uncaughtException', uncaughtExceptionHandler)
 
       this._subscriptions.push({
         stream: stream,
@@ -82,12 +100,11 @@ module.exports = class Stream extends EventEmitter {
       })
     })
 
-
     return this
   }
 
   catch(callback) {
-    this.on('uncaughtException', (err) => {
+    this._events.on('uncaughtException', (err) => {
       callback(err)
     })
 
@@ -95,12 +112,12 @@ module.exports = class Stream extends EventEmitter {
   }
 
   dispose() {
-    this.removeAllListeners('data')
-    this.removeAllListeners('uncaughtException')
+    this._events.removeAllListeners('data')
+    this._events.removeAllListeners('uncaughtException')
 
     while (this._subscriptions.length) {
       let { stream, event, handler } = this._subscriptions.shift()
-      stream.removeListener(event, handler)
+      stream._events.removeListener(event, handler)
     }
   }
 }

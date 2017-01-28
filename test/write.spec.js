@@ -9,11 +9,11 @@ describe('objectstream.write()', () => {
 
   it('should write data to current stream', (done) => {
 
-    stream.on('data', (data) => {
+    stream._events.on('data', (data) => {
       assert.equal(data, 'the data')
       done()
     })
 
-    stream.write('the data')
+    assert.equal(stream.write('the data') instanceof Stream, true)
   })
 })

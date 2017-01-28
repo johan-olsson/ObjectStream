@@ -9,7 +9,7 @@ describe('objectstream.dispose()', () => {
 
   it('should dispose all event listeners', (done) => {
 
-    stream.on('data', (data) => {
+    stream._events.on('data', (data) => {
       assert.equal(data, 'the data 1')
       stream.dispose()
       setTimeout(() => {
@@ -17,8 +17,8 @@ describe('objectstream.dispose()', () => {
       }, 10)
     })
 
-    stream.emit('data', 'the data 1')
-    stream.emit('data', 'the data 2')
-    stream.emit('data', 'the data 3')
+    stream._events.emit('data', 'the data 1')
+    stream._events.emit('data', 'the data 2')
+    stream._events.emit('data', 'the data 3')
   })
 })

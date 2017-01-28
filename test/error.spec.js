@@ -7,8 +7,8 @@ describe('objectstream.error()', () => {
 
   const stream = new Stream()
 
-  it('should emit `uncaughtException` with given error', (done) => {
-    stream.on('uncaughtException', (err) => {
+  it('should _events.emit( `uncaughtException` with given error', (done) => {
+    stream._events.on('uncaughtException', (err) => {
       assert.equal(err, 'Some Error')
       done()
     })

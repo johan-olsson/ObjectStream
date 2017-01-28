@@ -15,6 +15,6 @@ describe('objectstream.catch()', () => {
       done()
     })
 
-    stream.emit('uncaughtException', 'the error')
+    stream._events.emit('uncaughtException', 'the error')
   })
 })
