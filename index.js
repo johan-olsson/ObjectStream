@@ -7,6 +7,16 @@ module.exports = class Stream {
   constructor(events) {
     this._events = events || new EventEmitter()
     this._subscriptions = []
+
+    this._events.once('end', () => {
+      this._events.removeAllListeners('data')
+      this._events.removeAllListeners('error')
+
+      while (this._subscriptions.length) {
+        let { stream, event, handler } = this._subscriptions.shift()
+        stream._events.removeListener(event, handler)
+      }
+    })
   }
 
   write(data) {
@@ -15,7 +25,7 @@ module.exports = class Stream {
   }
 
   error(err) {
-    this._events.emit('uncaughtException', err)
+    this._events.emit('error', err)
     return this
   }
 
@@ -37,6 +47,14 @@ module.exports = class Stream {
       if (result) stream.write(result)
     })
 
+    this._events.on('error', (data) => {
+      stream.error(data)
+    })
+
+    this._events.on('end', () => {
+      stream.dispose()
+    })
+
     return stream
   }
 
@@ -51,12 +69,26 @@ module.exports = class Stream {
       if (result) stream.write(data)
     })
 
+    this._events.on('error', (data) => {
+      stream.error(data)
+    })
+
+    this._events.on('end', () => {
+      stream.dispose()
+    })
+
     return stream
   }
 
   pipe(stream) {
     this._events.on('data', (data) => {
       stream.write(data)
+    })
+    this._events.on('error', (data) => {
+      stream.error(data)
+    })
+    this._events.on('end', () => {
+      stream.dispose()
     })
     return stream
   }
@@ -68,7 +100,10 @@ module.exports = class Stream {
     streams.push(this)
     streams.forEach((stream) => {
       stream._events.on('data', (data) => {
-        outstream._events.emit('data', data)
+        outstream.write(data)
+      })
+      stream._events.on('error', (data) => {
+        outstream.error(data)
       })
     })
 
@@ -84,10 +119,10 @@ module.exports = class Stream {
     streams.forEach((stream) => {
 
       const dataHandler = handler.bind(this, 'data')
-      const uncaughtExceptionHandler = handler.bind(this, 'uncaughtException')
+      const errorHandler = handler.bind(this, 'error')
 
       stream._events.on('data', dataHandler)
-      stream._events.on('uncaughtException', uncaughtExceptionHandler)
+      stream._events.on('error', errorHandler)
 
       this._subscriptions.push({
         stream: stream,
@@ -95,8 +130,8 @@ module.exports = class Stream {
         handler: dataHandler
       }, {
         stream: stream,
-        event: 'uncaughtException',
-        handler: uncaughtExceptionHandler
+        event: 'error',
+        handler: errorHandler
       })
     })
 
@@ -104,7 +139,7 @@ module.exports = class Stream {
   }
 
   catch(callback) {
-    this._events.on('uncaughtException', (err) => {
+    this._events.on('error', (err) => {
       callback(err)
     })
 
@@ -112,12 +147,6 @@ module.exports = class Stream {
   }
 
   dispose() {
-    this._events.removeAllListeners('data')
-    this._events.removeAllListeners('uncaughtException')
-
-    while (this._subscriptions.length) {
-      let { stream, event, handler } = this._subscriptions.shift()
-      stream._events.removeListener(event, handler)
-    }
+    this._events.emit('end')
   }
 }
