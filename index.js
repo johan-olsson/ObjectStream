@@ -8,6 +8,9 @@ module.exports = class Stream {
     this._events = events || new EventEmitter()
     this._subscriptions = []
 
+    if (this._events.setMaxListeners)
+      this._events.setMaxListeners(30);
+
     this._events.once('end', () => {
       this._events.removeAllListeners('data')
       this._events.removeAllListeners('error')
@@ -40,18 +43,22 @@ module.exports = class Stream {
     const stream = new Stream()
 
     this._events.on('data', (data) => {
-      const result = transform(data, (data) => {
-        stream.write(data)
-      })
+      const result = transform(data)
 
-      if (result) stream.write(result)
+      if (result instanceof Promise)
+        result
+          .then((data) => {
+            stream.write(data)
+          })
+          .catch(() => {})
+      else stream.write(result)
     })
 
     this._events.on('error', (data) => {
       stream.error(data)
     })
 
-    this._events.on('end', () => {
+    this._events.once('end', () => {
       stream.dispose()
     })
 
@@ -62,18 +69,22 @@ module.exports = class Stream {
     const stream = new Stream()
 
     this._events.on('data', (data) => {
-      const result = filter(data, (result) => {
-        if (result) stream.write(data)
-      })
+      const result = filter(data)
 
-      if (result) stream.write(data)
+      if (result instanceof Promise)
+        result
+          .then(() => {
+            stream.write(data)
+          })
+          .catch(() => {})
+      else if (result) stream.write(data)
     })
 
     this._events.on('error', (data) => {
       stream.error(data)
     })
 
-    this._events.on('end', () => {
+    this._events.once('end', () => {
       stream.dispose()
     })
 
@@ -87,7 +98,7 @@ module.exports = class Stream {
     this._events.on('error', (data) => {
       stream.error(data)
     })
-    this._events.on('end', () => {
+    this._events.once('end', () => {
       stream.dispose()
     })
     return stream
@@ -144,6 +155,12 @@ module.exports = class Stream {
     })
 
     return this
+  }
+
+  ended(callback) {
+    this._events.once('end', () => {
+      callback()
+    })
   }
 
   dispose() {

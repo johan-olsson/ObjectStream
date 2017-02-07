@@ -56,10 +56,10 @@ describe('objectstream.filter()', () => {
   it('should return a new stream with the filtered data async', (done) => {
 
     const stream = new Stream()
-    const outstream = stream.filter((data, next) => {
-      setTimeout(() => {
-        next(data === 'the data2')
-      }, 1)
+    const outstream = stream.filter((data) => {
+      return new Promise((resolve) => {
+        resolve('the data2')
+      })
     })
     outstream._events.on('data', (data) => {
       assert.equal(data, 'the data2')
