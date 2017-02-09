@@ -14,12 +14,13 @@ describe('objectstream.proxy()', () => {
 
     let count = 1
 
-    assert.equal(stream1.proxy(stream2, stream3)
-    ._events.on('data', (data) => {
+    assert.equal(stream1.proxy(stream2, stream3) instanceof Stream, true)
+
+    stream1._events.on('data', (data) => {
       assert.equal(data, `the data ${count++}`)
 
       if (count === 4) done()
-    }) instanceof Stream, true)
+    })
 
     stream1._events.emit('data', 'the data 1')
     stream2._events.emit('data', 'the data 2')
