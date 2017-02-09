@@ -69,15 +69,21 @@ module.exports = class Stream {
     const stream = new Stream()
 
     this._events.on('data', (data) => {
-      const result = filter(data)
 
-      if (result instanceof Promise)
-        result
-          .then(() => {
-            stream.write(data)
-          })
-          .catch(() => {})
-      else if (result) stream.write(data)
+      if (!(filter instanceof Function)) {
+        if (Object.keys(filter).every((key) => filter[key] === data[key]))
+          stream.write(data)
+      } else {
+        const result = filter(data)
+
+        if (result instanceof Promise)
+          result.then(() => {
+              stream.write(data)
+            })
+            .catch(() => {})
+        else if (result)
+          stream.write(data)
+      }
     })
 
     this._events.on('error', (data) => {

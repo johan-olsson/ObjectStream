@@ -36,6 +36,27 @@ describe('objectstream.filter()', () => {
     stream._events.emit('error', 'the error')
   })
 
+  it('should return a new stream with the filtered data when using object input', (done) => {
+
+    const stream = new Stream()
+    const outstream = stream.filter({
+      data: 'the data2'
+    })
+    outstream._events.on('data', (data) => {
+      assert.equal(data.data, 'the data2')
+      done()
+    })
+
+    assert.equal(outstream instanceof Stream, true)
+
+    stream._events.emit('data', {
+      data: 'the data1'
+    })
+    stream._events.emit('data', {
+      data: 'the data2'
+    })
+  })
+
   it('should return a new stream with the filtered data', (done) => {
 
     const stream = new Stream()

@@ -75,6 +75,22 @@ stream.filter(data => {
   })
 ```
 
+If a object is used that object will be used as query
+
+```javascript
+
+const stream = new Objectstreamer()
+
+stream.filter({
+    type: 'fruit'
+  })
+  .read((data) => {
+    console.log(`${data.name} is a fruit`) // Apple is a fruit
+                                           // Orange is a fruit
+  })
+
+```
+
 #### stream.map()
 
 Filters behaves much like `Array.map`
