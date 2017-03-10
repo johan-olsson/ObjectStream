@@ -66,7 +66,8 @@ const stream = new Objectstreamer()
 
 stream.filter(data => {
     return new Promise((resolve, reject) => {
-      resolve(data.type === 'fruit')
+      if (data.type === 'fruit') resolve()
+      else reject()
     })
   })
   .read((data) => {

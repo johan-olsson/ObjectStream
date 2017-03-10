@@ -1,4 +1,5 @@
 'use strict'
+'use strict'
 
 const EventEmitter = require('events')
 
@@ -20,6 +21,19 @@ module.exports = class Stream {
         stream._events.removeListener(event, handler)
       }
     })
+
+    this.write = this.write.bind(this)
+    this.error = this.error.bind(this)
+    this.read = this.read.bind(this)
+    this.fromArray = this.fromArray.bind(this)
+    this.map = this.map.bind(this)
+    this.filter = this.filter.bind(this)
+    this.pipe = this.pipe.bind(this)
+    this.proxy = this.proxy.bind(this)
+    this.merge = this.merge.bind(this)
+    this.catch = this.catch.bind(this)
+    this.ended = this.ended.bind(this)
+    this.dispose = this.dispose.bind(this)
   }
 
   write(data) {
@@ -35,6 +49,15 @@ module.exports = class Stream {
   read(callback) {
     this._events.on('data', (data) => {
       callback(data)
+    })
+    return this
+  }
+
+  fromArray(array) {
+    setTimeout(() => {
+      array.forEach(data => {
+        this._events.emit('data', data)
+      })
     })
     return this
   }

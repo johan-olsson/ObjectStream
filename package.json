@@ -1,13 +1,14 @@
 {
   "name": "objectstreamer",
-  "version": "0.0.6",
-  "description": "",
+  "version": "0.0.7",
+  "description": "Low cost stream/array-like interface",
   "main": "index.js",
   "scripts": {
     "test": "mocha test",
     "test:watch": "mocha --watch test",
     "coverage": "nyc --reporter=html --reporter=text npm test; echo coverage/index.html"
   },
+  "git": "git@github.com:johan-olsson/ObjectStream.git",
   "author": "Johan Olsson",
   "license": "MIT",
   "devDependencies": {
